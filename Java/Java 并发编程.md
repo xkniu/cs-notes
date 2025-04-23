@@ -58,8 +58,8 @@ volatile 的实现原理：
 
 - volatile 写不能和前面的所有操作重排序；volatile 读不能和后面的所有操作重排序；volatile 写不能和后面的 volatile 读重排序。
 - 插入对应的内存屏障以禁止屏障前后对应的操作重排序。主要的四种屏障为 StoreStore、StoreLoad、LoadStore、LoadLoad。通常会组合使用屏障，两种常用的组合屏障为：
-    - Write Release Barrier = StoreStore + LoadStore，即该写操作前的所有指令都不能和该写操作乱序。
-    - Read Acquire Barrier = LoadLoad + LoadStore，即该读操作后的所有指令都不能和该读操作乱序。
+  - Write Release Barrier = StoreStore + LoadStore，即该写操作前的所有指令都不能和该写操作乱序。
+  - Read Acquire Barrier = LoadLoad + LoadStore，即该读操作后的所有指令都不能和该读操作乱序。
 - volatile 写前面插入 Write Release Barrier，后面插入 StoreLoad Barrier；volatile 读后面插入 Read Acquire Barrier。
 - 不同处理器对重排序的准许情况是不同的，JMM 只插入必要的屏障即可。比如 x86 限制比较严格，只允许 StoreLoad 重排；PowerPC 限制比较宽松，允许四种重排。因此在 x86 体系下只需要在 volatile 写后面插入 StoreLoad Barrier 即可，其他的几个屏障可以省去。
 
@@ -71,10 +71,10 @@ MESI 协议是一种广泛使用的支持缓存写回策略的缓存一致性协
 
 - MESI 协议属于 snooping（窥探）协议，所有内存传输都在一条共享的总线上，所有的处理器都能看到这条总线。窥探协议的思想是，缓存不仅仅在做内存传输的时候才和总线打交道，而是不停地在窥探总线上发生的数据交换，跟踪其他缓存在做什么，来控制自身缓存的状态。
 - MESI 是四种缓存行状态的缩写：
-    - I（Invalid）：缓存已失效，内容已过时，下次需要从内存读取。
-    - S（Shared）：共享状态，是内存数据的一份拷贝，只能被读取，不能被写入。它可以在多个 CPU 的缓存中。
-    - E（Exclusive）：独占状态，是内存数据的一份拷贝，但是只存在一个 CPU 缓存中，其他处理器原先持有的会失效。
-    - M（Modified）：已修改，被 CPU 修改了还没有刷回到内存，一定先获取 E 状态后才能修改，转为 M 状态。
+  - I（Invalid）：缓存已失效，内容已过时，下次需要从内存读取。
+  - S（Shared）：共享状态，是内存数据的一份拷贝，只能被读取，不能被写入。它可以在多个 CPU 的缓存中。
+  - E（Exclusive）：独占状态，是内存数据的一份拷贝，但是只存在一个 CPU 缓存中，其他处理器原先持有的会失效。
+  - M（Modified）：已修改，被 CPU 修改了还没有刷回到内存，一定先获取 E 状态后才能修改，转为 M 状态。
 
 CPU 支持 MESI 协议时，为了提高处理效率，引入了两个额外组件：
 
