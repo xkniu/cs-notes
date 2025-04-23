@@ -47,7 +47,7 @@ List<String> list0 = new ArrayList<>();
 // 初始化并且指定容量
 List<String> list1 = new ArrayList<>(10);
 // 使用 list 来初始化
-List<String> list2 = new ArrayList<>(Arrays.asList(new string[]{"hello", "world"}));
+List<String> list2 = new ArrayList<>(Arrays.asList(new String[]{"hello", "world"}));
 // 匿名内部类初始化并放入初始值
 List<String> list3 = new ArrayList<>() {{ add("hello"); }};
 
@@ -67,7 +67,7 @@ list0.add("test");
 // 在指定 index 添加元素
 list0.add(0, "test");
 // 批量添加元素
-list0.add(list1);
+list0.addAll(list1);
 // 是否为空
 boolean isEmpty = list0.isEmpty();
 
@@ -131,6 +131,8 @@ for (Integer key : m.keySet()) {
 map.put(1, 100);
 // 根据键获取值
 Integer value = map.get(1);
+// 不存在时获取默认值
+Integer value = map.getOrDefault(1, 0);
 // 是否包含 key
 boolean contains = map.containsKey(1);
 // 是否包含 value
@@ -141,6 +143,3 @@ boolean containsValue = map.containsValue(1);
 
 - 需要按插入顺序遍历，可以使用 `LinkedHashMap`。
 - 需要按 key 顺序遍历，可以使用 `TreeMap`。
-
-## Deque
-

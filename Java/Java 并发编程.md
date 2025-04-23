@@ -244,7 +244,7 @@ JDK 1.7 新增了 ForkJoinPool，原理为：
 
 - 创建一个固定大小的 worker 线程池，每个 worker 有两个 WorkQueue 双端队列用来保存任务。
 - 提交一个任务 ForkJoinTask 后，某 worker 会获取到该任务，它可以 fork 出来一些新的子 ForkJoinTask，放入自己的 WorkQueue 中。奇数的 WorkQueue 用来放外部提交的任务，偶数的 WorkQueue 用来放自己提交的任务。
-- worker 取自己队列的任务是 LIFO，另外当一个 worker 空闲时，它可以 steal 其他 worker 的队列任务，偷取时是从队头 FIFO 偷取的。取任务是用 CAS 实现的，取自己队列任务和偷取别人队列任务使用队列的不同端，能够减少并发冲突。
+- worker 对自己的任务是在队头进行操作，相当于 LIFO。另外当一个 worker 空闲时，它可以 steal 其他 worker 的队列任务，从队尾进行窃取，相当于 FIFO。取任务是用 CAS 实现的，取自己队列任务和偷取别人队列任务使用队列的不同端，能够减少并发冲突。
 
 ForkJoinPool 比较适合计算密集型任务，worker 数量不需要太多，通常和 CPU 核数保持一致，思想是把大任务拆分为小任务并发执行，然后合并结果，通过 work stealing 机制避免 worker 空闲。
 
