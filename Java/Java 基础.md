@@ -50,9 +50,9 @@
 JDK 1.8 优化：
 
 - 当桶的链表过长时，会优化为红黑树。
-    - `TREEIFY_THRESHOLD`：树化阀值，默认为8，链表长度超过8时转换为红黑树。
-    - `UNTREEIFY_THRESHOLD`：链化阀值，默认值6，rehash 时桶内数据元素小于6，转换为链表。
-    - `MIN_TREEIFY_CAPACITY`：最小树化容量，默认为64，在容量小于这之前，优先扩容，而不是进行树化。
+  - `TREEIFY_THRESHOLD`：树化阀值，默认为8，链表长度超过8时转换为红黑树。
+  - `UNTREEIFY_THRESHOLD`：链化阀值，默认值6，rehash 时桶内数据元素小于6，转换为链表。
+  - `MIN_TREEIFY_CAPACITY`：最小树化容量，默认为64，在容量小于这之前，优先扩容，而不是进行树化。
 - JDK 1.7 及以前 rehash 时使用头插法，会让同一个桶中的数据逆序，在并发时可能形成环导致死循环；1.8 后改成尾插法，rehash 后桶中的元素顺序不变，不会出现死循环。当然 HashMap 都不支持并发，不应该在并发中使用。
 
 ### LinkedHashMap

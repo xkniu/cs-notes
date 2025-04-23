@@ -24,10 +24,10 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 - Redis 通常只用 C 字符串作字符串常量。大部分情况下，使用 SDS (Simple Dynamic String) 来表示字符串值
 - SDS 在数组扩容时使用容量预分配（额外多申请些空间），并冗余了长度与未使用字节数信息
 - SDS 的优点如下：
-    - 冗余了长度信息，`strlen` 的时间复杂度从 **O(N)** 变为 **O(1)**
-    - 提供的 API 负责了对空间申请的操作，杜绝了缓冲区溢出
-    - 预分配内存，减少了内存重分配的次数
-    - 二进制安全，可以用来保存二进制字符串（含有 `\0` 字符）
+  - 冗余了长度信息，`strlen` 的时间复杂度从 **O(N)** 变为 **O(1)**
+  - 提供的 API 负责了对空间申请的操作，杜绝了缓冲区溢出
+  - 预分配内存，减少了内存重分配的次数
+  - 二进制安全，可以用来保存二进制字符串（含有 `\0` 字符）
 - 空间预分配策略：长度小于 1M 则分配 len 大小的空间；大于等于 1M，分配 1M 的未使用空间
 - 惰性空间释放：缩短后，不释放空间，只是用 free 记录下来。提供了专门函数用于释放
 
@@ -106,8 +106,8 @@ typedef struct dict {
 - 哈希表的 rehash 是一个渐进式的操作（redis 为单进程单线程，减少单个操作的处理时间）；在 rehash 的过程中删除/查找/更新时需要同时操作两个 hash 表，而新增只需要操作新哈希表（保证旧哈希表的数据会越来越少，从而 rehash 完成）
 - 由于操作系统的 **copy-on-write** 特性，为了避免 fork 的子进程占用内存过大，redis 哈希表的负载因子在没有 BGSAVE/BGAOFREWRITE 进行时为 1，在有 BGSAVE/BGAOFREWRITE 正在进行时为 5（有子进程的时候，只在哈希表真的冲突很严重的情况下 rehash）。哈希表负载因子为 0.1 的时候进行收缩
 - Rehash 执行的时间：
-    - 每次对哈希表进行操作的时候（满足负载因子：无子进程 1，有子进程 5），进行扩容操作，不会进行收缩
-    - serverCron，当有子进程时不进行 rehash；无子进程时，每次对于设定数量个 db 进行缩容或扩容操作（这里是 rehash 一定的时间，而不是一个 hash 值）
+  - 每次对哈希表进行操作的时候（满足负载因子：无子进程 1，有子进程 5），进行扩容操作，不会进行收缩
+  - serverCron，当有子进程时不进行 rehash；无子进程时，每次对于设定数量个 db 进行缩容或扩容操作（这里是 rehash 一定的时间，而不是一个 hash 值）
 
 ### 跳跃表 skiplist
 
@@ -143,9 +143,9 @@ typedef struct zset {
 - 跳表用作有序集合的实现和在集群节点中用作内部数据结构
 - 跳表简述：每个节点随机一个层数，其中根据幂次定律，越高层的概率越少（初始层数为1，通过 roll 有一半概率增加一层，不停的 roll 直到出现不增加层的结果。从概率上来说，高层的数量应该为低一层节点数量的一半）。将每个节点的各层在对应层上用指针形成链表，每次查询时，通过首节点（虚拟节点，拥有数据节点中最高层数层）的最高层开始遍历，查找过程与二叉查找树类似
 - Redis 的跳表的一些特性：
-    - Redis 中链表为双向链表
-    - Redis 中记了它到下一个节点的跨度（距离）
-    - Redis 跳表中用来排序的是 score，还存了实际的对象 obj
+  - Redis 中链表为双向链表
+  - Redis 中记了它到下一个节点的跨度（距离）
+  - Redis 跳表中用来排序的是 score，还存了实际的对象 obj
 
 ### 整数集合 intset
 
@@ -206,11 +206,11 @@ typedef struct redisObject {
 总结：
 
 - Redis 有字符串、列表、哈希、集合、有序集合5种数据类型
-    - REDIS_STRING，编码是整数数值或 SDS 类型（和 embstr 字符串，将 SDS 与 redisObject 紧挨着申请内存空间，一种优化，缓存友好，当字符串长度小于等于32时用）
-    - REDIS_LIST，编码是 ziplist 或 linkedlist。所有字符串长度小于 *list-max-ziplist-value (64)*，元素数量少于 *list-max-ziplist-entries (512)* 时使用 ziplist
-    - REDIS_HASH，编码可以是 ziplist 或者 hashtable。所有字符串长度小于 *hash-max-ziplist-value (64)*，元素数量少于 *hash-max-ziplist-entries (512)* 时使用 ziplist
-    - REDIS_SET，编码是 intset 或 hashtable。所有元素都是整数并且长度小于 *set-max-intset-entries (512)* 时使用 intset
-    - REDIS_ZSET，编码是 ziplist 或者 skiplist。所有字符串长度小于 *zset-max-ziplist-value (64)*，元素数量少于 *zset-max-ziplist-entries (128)* 时使用 ziplist（这里的 ziplist 是按照 score 排序的）
+  - REDIS_STRING，编码是整数数值或 SDS 类型（和 embstr 字符串，将 SDS 与 redisObject 紧挨着申请内存空间，一种优化，缓存友好，当字符串长度小于等于32时用）
+  - REDIS_LIST，编码是 ziplist 或 linkedlist。所有字符串长度小于 *list-max-ziplist-value (64)*，元素数量少于 *list-max-ziplist-entries (512)* 时使用 ziplist
+  - REDIS_HASH，编码可以是 ziplist 或者 hashtable。所有字符串长度小于 *hash-max-ziplist-value (64)*，元素数量少于 *hash-max-ziplist-entries (512)* 时使用 ziplist
+  - REDIS_SET，编码是 intset 或 hashtable。所有元素都是整数并且长度小于 *set-max-intset-entries (512)* 时使用 intset
+  - REDIS_ZSET，编码是 ziplist 或者 skiplist。所有字符串长度小于 *zset-max-ziplist-value (64)*，元素数量少于 *zset-max-ziplist-entries (128)* 时使用 ziplist（这里的 ziplist 是按照 score 排序的）
 - Redis 命令多态，根据 key 的类型来判断是不是能执行命令和如何执行命令
 - 对象通过引用计数来实现内存回收
 - Redis 初始化服务器时创建了 0~9999 的整数的字符串对象用来共享
@@ -247,8 +247,8 @@ typedef struct redisDb {
 - 数据库的键值都存在 dict 字典中；带过期时间的 key，过期信息存在 expires 字典中
 - 对 key 设置过期时间，相对与绝对时间都会转为绝对时间保存（PEXPIREAT 实现）
 - Redis 过期 key 删除策略
-    - 惰性删除：获取 key 的时候，如果过期了删除。内存不友好，CPU 友好（读写之前会执行 expireIfNeeded）
-    - 定期删除：serverCron，随机从 expires 字典中取一个 key，如果过期了就删除它。检查一定的数量或者到达指定的超时时间
+  - 惰性删除：获取 key 的时候，如果过期了删除。内存不友好，CPU 友好（读写之前会执行 expireIfNeeded）
+  - 定期删除：serverCron，随机从 expires 字典中取一个 key，如果过期了就删除它。检查一定的数量或者到达指定的超时时间
 - 执行生成 RDB 的时候不保存过期的 key；载入 RDB 的时候，master 不载入已经过期的 key，slave 不论是否过期都载入，当与 master 进行数据同步的时候会删除这些 key
 - 当过期 key 被删除的时候，会向 AOF 文件中追加一个 DEL 命令；AOF 重写后不包含过期 key
 - 主服务器 key 过期后，会向所有从服务器发送一条 DEL 命令；从服务器不会主动删除过期 key，而是等待主服务器的 DEL 命令（从服务器没有惰性删除，导致有可能会获取到已经过期的 key，在 3.2 版本中[修复了这个问题](https://github.com/antirez/redis/issues/1768)，虽然不惰性删除，但是假如 key 过期了，不返回该 key）
@@ -272,16 +272,16 @@ struct redisServer {
 - RDB 数据更紧致，但及时性不如 AOF
 - Redis 启动时恢复状态，优先载入 AOF 文件，只有没有开 AOF 持久化时，才通过 RDB 恢复（因为 AOF 及时性更好）。加载过程中服务阻塞
 - RDB
-    - SAVE，主进程处理，服务阻塞
-    - BGSAVE，fork 一个子进程生成 RDB，不会阻塞服务
-    - SAVE 的条件任意一项满足（通过 dirty、lastsave 判断条件是否达成）时，serverCron 会生成 RDB
-    - 每次写操作 dirty 计数器加 1，用作 save 判断标准
+  - SAVE，主进程处理，服务阻塞
+  - BGSAVE，fork 一个子进程生成 RDB，不会阻塞服务
+  - SAVE 的条件任意一项满足（通过 dirty、lastsave 判断条件是否达成）时，serverCron 会生成 RDB
+  - 每次写操作 dirty 计数器加 1，用作 save 判断标准
 - AOF
-    - 每次执行完写命令，将写命令追加到 AOF 缓冲区中。然后在 redis 的主事件循环（beforeSleep）中根据配置判断是否需要将 AOF 缓冲区写到 AOF 文件中
-    - 写入到 AOF 文件后不一定同步到磁盘，根据配置 `appendfsync` 的值 `always/everysec/no`，在 `每次事件循环/每秒/从不` 时调用系统同步刷新到磁盘函数
-    - 载入 AOF 是通过一个伪客户端执行 AOF 文件中的命令实现的
-    - AOF 文件重写并不分析以前的文件，而是通过当前内存数据库状态生成
-    - AOF 重写期间可能会有新的命令，主进程将命令保存在 AOF 重写缓冲区中，当子进程完成工作后，主进程将缓冲区中的内容写入，并原子重命名新 AOF 文件替换原 AOF 文件
+  - 每次执行完写命令，将写命令追加到 AOF 缓冲区中。然后在 redis 的主事件循环（beforeSleep）中根据配置判断是否需要将 AOF 缓冲区写到 AOF 文件中
+  - 写入到 AOF 文件后不一定同步到磁盘，根据配置 `appendfsync` 的值 `always/everysec/no`，在 `每次事件循环/每秒/从不` 时调用系统同步刷新到磁盘函数
+  - 载入 AOF 是通过一个伪客户端执行 AOF 文件中的命令实现的
+  - AOF 文件重写并不分析以前的文件，而是通过当前内存数据库状态生成
+  - AOF 重写期间可能会有新的命令，主进程将命令保存在 AOF 重写缓冲区中，当子进程完成工作后，主进程将缓冲区中的内容写入，并原子重命名新 AOF 文件替换原 AOF 文件
 - SAVE/BGSAVE 可以生成 RDB，BGSAVE fork 出一个子进程来生成 RDB 文件
 - BGSAVE 执行期间，拒绝新的 SAVE/BGSAVE 命令，并将 BGREWRITEAOF 命令排队
 - BRREWRITEAOF 执行期间，其他 BGSAVE 命令和 BGREWRITEAOF 命令会被拒绝
@@ -328,22 +328,22 @@ void aeMain(aeEventLoop *eventLoop) {
 - Redis 的复制分为同步（sync）和命令传播（command propagate）
 - 旧版本中，每次同步（断线后）都使用完全同步；新版中首次使用完全同步，之后使用部分同步，如果部分同步失败，则退化为完全同步
 - 复制过程（完全同步 SYNC）
-    - 从服务器向主服务器发送 SYNC 命令
-    - 主服务器收到后执行 BGSAVE，生成一个 RDB，并且用一个缓冲区记录之后的写命令
-    - 主服务器将 RDB 文件发送给从服务器，从服务器载入 RDB 文件
-    - 主服务器将缓冲区中的命令发给从服务器
+  - 从服务器向主服务器发送 SYNC 命令
+  - 主服务器收到后执行 BGSAVE，生成一个 RDB，并且用一个缓冲区记录之后的写命令
+  - 主服务器将 RDB 文件发送给从服务器，从服务器载入 RDB 文件
+  - 主服务器将缓冲区中的命令发给从服务器
 - 复制过程（部分重同步 PSYNC），从服务器断线重连后使用部分同步
-    - 主服务器维持一个复制积压缓冲区，为 FIFO 队列，默认大小为 `repl-backlog-size (1M)`
-    - 主从服务器都维持一个复制偏移量
-    - 从服务器初次同步时，主服务器返回自身 id
-    - 从服务器发送自己当前偏移量和主服务器 id 发送过去，如果偏移量还在队列中，则将偏移量后的数据同步给从服务器
+  - 主服务器维持一个复制积压缓冲区，为 FIFO 队列，默认大小为 `repl-backlog-size (1M)`
+  - 主从服务器都维持一个复制偏移量
+  - 从服务器初次同步时，主服务器返回自身 id
+  - 从服务器发送自己当前偏移量和主服务器 id 发送过去，如果偏移量还在队列中，则将偏移量后的数据同步给从服务器
 - 复制的过程是 slave 成为 master 的客户端，发起同步命令；之后 master 也会成为 salve 的客户端，将命令发送给 slave，slave 是通过执行 master 的写命令实现的同步
 - 新版本中初次完全同步也使用 PSYNC 实现（`PSYNC ? -1`）
 - 同步完成后，通过命令传播来保持主从一致性，所以主从不是强一致的
 - Redis 从服务器向主服务器发送 PING 告知 master 自己状态，作用主要有
-    - 检测网络连接丢失
-    - 检测命令丢失
-    - 辅助实现 min-slave
+  - 检测网络连接丢失
+  - 检测命令丢失
+  - 辅助实现 min-slave
 
 ### Sentinel
 
@@ -358,13 +358,13 @@ Sentinel 只是一个 HA 方案，是非集群下，单机 Redis 来实现高可
 - Sentinel 每秒一次发送 PING 判断实例是否下线，当回复错误或超时无回复的时候，标记实例为主观下线
 - 当满足配置要求（每个 sentinel 设置的 quorum 值），sentinel 将主服务器判断为客观下线后。Sentinel 将选举 leader 并由 leader 对主服务器进行故障转移
 - Sentinel 的 leader 选举是基于 RAFT 协议的，不同点有：
-    - Sentinel 中除了超过半数，还需要超过配置的 quorum
-    - Sentinel 选举出 leader 后不会发送 AppendEntries，而是提升某个 slave 为 master，这样新的 master 产生后，其他的 sentinel 检测到 master 恢复就会退出选举状态
+  - Sentinel 中除了超过半数，还需要超过配置的 quorum
+  - Sentinel 选举出 leader 后不会发送 AppendEntries，而是提升某个 slave 为 master，这样新的 master 产生后，其他的 sentinel 检测到 master 恢复就会退出选举状态
 - 选举为 master 的 sentinel 根据下面顺序将 slave 提升为 master
-    - 去除下线状态从服务器
-    - 去除五秒内没有回复 sentinel INFO 的从服务器
-    - 去除与主服务器断开时间较长的从
-    - 对剩下的从，按照优先级、复制偏移量、ID 排序，取其中第一个
+  - 去除下线状态从服务器
+  - 去除五秒内没有回复 sentinel INFO 的从服务器
+  - 去除与主服务器断开时间较长的从
+  - 对剩下的从，按照优先级、复制偏移量、ID 排序，取其中第一个
 
 ### 集群
 
@@ -374,10 +374,10 @@ Sentinel 只是一个 HA 方案，是非集群下，单机 Redis 来实现高可
 - 当节点 A 正在迁移 i 槽到 B 时，当 A 在自己数据库中没找到该键时，返回客户端一个 ASK 错误，引导客户端到 B 节点获取数据
 - 集群节点间通过发送接收消息来进行通信，常见消息有 MEET/PING/PONG/PUBLIST/FAIL，有的消息通过 gossip 协议缓慢传播，有的通过广播让节点尽快获知
 - 集群间的互相发现，更新配置信息用到的命令 `MEET/PING/PONG` 是通过 gossip 协议实现的
-    - 每隔一秒钟随机抽取5个节点，对其中最长时间没发送过的节点发送 PING 消息（自己所知的随机两个节点信息）
-    - 时间过长（*cluster-node-timeout* 的一半）没有 PING 过的节点，也会发送 PING 消息
-    - 收到者回复一条 PONG 消息
-    - 一个节点也可以通过向集群广播自己的 PONG 消息，让集群立即刷新对节点的认识
+  - 每隔一秒钟随机抽取5个节点，对其中最长时间没发送过的节点发送 PING 消息（自己所知的随机两个节点信息）
+  - 时间过长（*cluster-node-timeout* 的一半）没有 PING 过的节点，也会发送 PING 消息
+  - 收到者回复一条 PONG 消息
+  - 一个节点也可以通过向集群广播自己的 PONG 消息，让集群立即刷新对节点的认识
 - Master 选举方案（RAFT 协议实现）：集群中 PING 来获取其他节点状态，当半数以上将某个主节点标为下线后，该被标为节点下线，向集群中广播 FAIL 消息。当从服务器发现自己的主节点下线后，开始竞选 master，发出申请，只有 master 节点具有投票权，master 返回是否同意投票（每个纪元只能返回一次），收到半数以上 master 选票的从节点成为新的主节点
 
 ## 独立功能
@@ -439,9 +439,9 @@ typedef struct redisDb {
 - Redis 是单进程单线程，一个时刻只有一个事务在执行，满足隔离性
 - Redis 事务耐久性取决于 redis 持久化方式
 - Redis 事务不满足一致性，即错误出现后，不会回退
-    - Redis 入队前有基本的命令检查，入队错误会抛弃整个事务
-    - 事务之间失败，redis 会忽略该错误，继续执行
-    - 服务器停机时，可能事务只执行一部分，导致事务出现不一致
+  - Redis 入队前有基本的命令检查，入队错误会抛弃整个事务
+  - 事务之间失败，redis 会忽略该错误，继续执行
+  - 服务器停机时，可能事务只执行一部分，导致事务出现不一致
 
 ### 二进制数组
 

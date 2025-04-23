@@ -40,22 +40,22 @@ Kafka 是一个分布式的，基于发布订阅的消息系统。
 核心角色：
 
 - Kafka Client：
-    - Producer: 消息发送者，生成消息并投递到 Broker 中。
-    - Consumer: 消息消费者，从 Broker 中拉取消息并处理。
+  - Producer: 消息发送者，生成消息并投递到 Broker 中。
+  - Consumer: 消息消费者，从 Broker 中拉取消息并处理。
 - Kafka Server:
-    - Broker 集群: Kafka 服务实例集群，提供消息处理服务。
-    - ZooKeeper 集群：用来存储 Kafka 集群的一些元数据。
+  - Broker 集群: Kafka 服务实例集群，提供消息处理服务。
+  - ZooKeeper 集群：用来存储 Kafka 集群的一些元数据。
 
 核心概念：
 
 - Topic (主题): 消息以主题为单位进行分类，生产者发送消息到某个主题中，消费者消费某个主题的消息。
 - Partition (分区): 消息并发的单位，用来提高 Topic 消息的吞吐量。一个 Topic 可以有多个 partition，每个 partition 的发送和消费是有序的。
 - Repilica (副本): 分区有多副本机制，用来提高容灾能力。副本具有主从关系，Leader 副本负责处理读写请求，Follower 只负责 Leader 副本的消息同步。当 Leader 出现故障时，从 Follower 中选举新的 Leader。
-    - AR (Asiggend Replicas): 分区的所有副本，AR=ISR+OSR
-    - ISR (In-Sync Replicas): 与 Leader 分区保持一定程度同步的副本
-        - LEO (Log End Offset): 副本日志文件中下一条待写入的消息 offset
-        - HW (High Watermark): ISR 中最小的 LEO，即同步最慢的节点的同步位置。消费者只能消费 HW 之前的数据。
-    - OSR (Out-of-Sync Replicas): 与 Leader 分区同步滞后过多的副本。如果副本在 `replica.lag.time.max.ms`（默认为10s）内，没有赶上过一次 Leader 的 LEO，则视为滞后过多，将被踢出 ISR。
+  - AR (Asiggend Replicas): 分区的所有副本，AR=ISR+OSR
+  - ISR (In-Sync Replicas): 与 Leader 分区保持一定程度同步的副本
+    - LEO (Log End Offset): 副本日志文件中下一条待写入的消息 offset
+    - HW (High Watermark): ISR 中最小的 LEO，即同步最慢的节点的同步位置。消费者只能消费 HW 之前的数据。
+  - OSR (Out-of-Sync Replicas): 与 Leader 分区同步滞后过多的副本。如果副本在 `replica.lag.time.max.ms`（默认为10s）内，没有赶上过一次 Leader 的 LEO，则视为滞后过多，将被踢出 ISR。
 - ConsumerGroup（消费组）：每个消费者属于一个消费组。对于某个 Topic 的消息，每条消息只会被发到订阅它的消费者组的一个消费者实例上。可以通过多个消费者组订阅一个 Topic 来实现广播功能。
 
 ## 生产者/消费者
@@ -63,9 +63,9 @@ Kafka 是一个分布式的，基于发布订阅的消息系统。
 生产者核心配置：
 
 - `acks`，多少副本收到消息视为发送成功，在可靠性和吞吐量间平衡。有三种类型的值：
-    - 0: 发送消息后不等待回应。如果消息从发送到写入 Kafka 出现了异常，生产者也不知道，消息直接丢失。
-    - 1（默认值）: 分区 leader 副本收到消息，就会向生产者响应成功。
-    - -1 (all): 所有参与复制的 ISR 都收到消息，生产者才会响应成功。如果需要保证可靠性，还需要配合 broker 的 `min.insync.replicas` 参数。
+  - 0: 发送消息后不等待回应。如果消息从发送到写入 Kafka 出现了异常，生产者也不知道，消息直接丢失。
+  - 1（默认值）: 分区 leader 副本收到消息，就会向生产者响应成功。
+  - -1 (all): 所有参与复制的 ISR 都收到消息，生产者才会响应成功。如果需要保证可靠性，还需要配合 broker 的 `min.insync.replicas` 参数。
 - 生产者可以设置重试次数（`retries`，默认为 0，不重试）和重试间隔（`retry.backoff.ms`，默认为 100）来进行消息重试。但是重试可能导致 partition 内消息乱序，如果对顺序有强要求，应将 `max.in.flight.requests.per.connection`（收到 Broker 响应前可以发多少消息，默认为5）设为 1。
 
 生产者客户端架构：
@@ -130,26 +130,26 @@ Kafka 并没有提供一个选项来控制整体的消息投递语义，而是�
 如果要支持 At least once 语义，需要进行以下配置：
 
 - Producer：
-    - acks（默认值为 1）：需要配置为 -1（all），来确保所有的 ISR 节点复制完才返回成功。
+  - acks（默认值为 1）：需要配置为 -1（all），来确保所有的 ISR 节点复制完才返回成功。
 - Broker：
-    - min.insync.replicas（默认值为 1）：需要设置为大于 1，例如 2。当生产者设置了 acks 为 all 时，指定了 ISR 集合中的最小副本数，如果小于副本数，则抛出异常。
-    - unclean.leader.election.enable（默认值为 false）：需要设置为 false，不允许非 ISR 节点选举成为 leader，否则可能发生数据丢失。
+  - min.insync.replicas（默认值为 1）：需要设置为大于 1，例如 2。当生产者设置了 acks 为 all 时，指定了 ISR 集合中的最小副本数，如果小于副本数，则抛出异常。
+  - unclean.leader.election.enable（默认值为 false）：需要设置为 false，不允许非 ISR 节点选举成为 leader，否则可能发生数据丢失。
 - Consumer：
-    - enable.auto.commit（默认值为 true）：设置为 false，并且手动管理位移的提交，当消费失败的时候不提交消息。然后再进行重复消息，并且在业务实现上支持幂等的处理。在某些框架里也可以配置为自动提交，且当有错误的时候不进行提交。
+  - enable.auto.commit（默认值为 true）：设置为 false，并且手动管理位移的提交，当消费失败的时候不提交消息。然后再进行重复消息，并且在业务实现上支持幂等的处理。在某些框架里也可以配置为自动提交，且当有错误的时候不进行提交。
 
 如果要支持 At most once 语义，需要进行以下配置：
 
 - Producer：
-    - acks：配置为 0，发送消息后不等待回复，即无视是否发送成功。
+  - acks：配置为 0，发送消息后不等待回复，即无视是否发送成功。
 - Consumer：
-    - 消费者先提交 offset 再处理消息。
+  - 消费者先提交 offset 再处理消息。
 
 如果要支持 Exactly Once 语义，需要在 "At least once" 配置的基础上，再进行以下配置：
 
 - Producer：
-    - enable.idempotence：设置支持发送的幂等。
+  - enable.idempotence：设置支持发送的幂等。
 - Consumer：
-    - 要求消费的处理逻辑和 offset 的提交是原子性的。即消费成功则 offset 一定能提交，消费失败 offset 需要跟着回滚。可以使用分布式事务，或者将 offset 和业务数据存储在同一个支持事务的地方。
+  - 要求消费的处理逻辑和 offset 的提交是原子性的。即消费成功则 offset 一定能提交，消费失败 offset 需要跟着回滚。可以使用分布式事务，或者将 offset 和业务数据存储在同一个支持事务的地方。
 
 ## Kafka 的事务
 

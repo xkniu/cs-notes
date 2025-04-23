@@ -15,10 +15,10 @@ Bean 的生命周期，主要分为四个阶段：
 Bean 生命周期中的一些扩展点：
 
 - 影响所有 bean：
-    - BeanPostProcessor：在初始化的前后执行：`preProcessBeforeInitialization`、`postProcessAfterInitialization`。
+  - BeanPostProcessor：在初始化的前后执行：`preProcessBeforeInitialization`、`postProcessAfterInitialization`。
 - 影响单个 bean：
-    - XxxAware 接口：在 BeanPostProcessor 之前执行，用来获取 Spring 容器里的一些资源。
-    - 生命周期接口：初始化和销毁。
+  - XxxAware 接口：在 BeanPostProcessor 之前执行，用来获取 Spring 容器里的一些资源。
+  - 生命周期接口：初始化和销毁。
 
 Bean 的作用域：
 
